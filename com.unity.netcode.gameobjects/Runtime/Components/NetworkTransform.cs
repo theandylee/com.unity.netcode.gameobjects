@@ -2690,6 +2690,10 @@ namespace Unity.Netcode.Components
                         if (SyncPositionZ) { adjustedPosition.z = interpolatedPosition.z; }
                     }
                 }
+                else
+                {
+                    m_InternalCurrentPosition = transform.position;
+                }
 
                 if (SynchronizeScale)
                 {
