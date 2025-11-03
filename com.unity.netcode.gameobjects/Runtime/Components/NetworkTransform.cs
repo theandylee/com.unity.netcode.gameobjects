@@ -1002,6 +1002,8 @@ namespace Unity.Netcode.Components
 
         #region PROPERTIES AND GENERAL METHODS
 
+        public bool SkipNextStateUpdate { get; set; }
+
         /// <summary>
         /// Used on the authority side only.
         /// This is the current network tick and is set within <see cref="NetworkManager.NetworkUpdate(NetworkUpdateStage)"/>.
@@ -2801,13 +2803,16 @@ namespace Unity.Netcode.Components
                 else
 #endif
                 {
-                    if (PositionInLocalSpace)
+                    if (!SkipNextStateUpdate)
                     {
-                        transform.localPosition = m_InternalCurrentPosition;
-                    }
-                    else
-                    {
-                        transform.position = m_InternalCurrentPosition;
+                        if (PositionInLocalSpace)
+                        {
+                            transform.localPosition = m_InternalCurrentPosition;
+                        }
+                        else
+                        {
+                            transform.position = m_InternalCurrentPosition;
+                        }
                     }
                 }
             }
@@ -2843,16 +2848,21 @@ namespace Unity.Netcode.Components
                 else
 #endif
                 {
-                    if (RotationInLocalSpace)
+                    if (!SkipNextStateUpdate)
                     {
-                        transform.localRotation = m_InternalCurrentRotation;
-                    }
-                    else
-                    {
-                        transform.rotation = m_InternalCurrentRotation;
+                        if (RotationInLocalSpace)
+                        {
+                            transform.localRotation = m_InternalCurrentRotation;
+                        }
+                        else
+                        {
+                            transform.rotation = m_InternalCurrentRotation;
+                        }
                     }
                 }
             }
+
+            SkipNextStateUpdate = false;
 
             // Apply the scale if we are synchronizing scale
             if (SynchronizeScale)
