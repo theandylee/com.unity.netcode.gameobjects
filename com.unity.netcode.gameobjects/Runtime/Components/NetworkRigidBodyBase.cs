@@ -67,7 +67,7 @@ namespace Unity.Netcode.Components
         private float m_TickFrequency;
         private float m_TickRate;
 
-        private enum InterpolationTypes
+        protected enum InterpolationTypes
         {
             None,
             Interpolate,
