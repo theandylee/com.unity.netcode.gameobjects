@@ -2697,6 +2697,13 @@ namespace Unity.Netcode.Components
                         if (SyncPositionZ) { adjustedPosition.z = interpolatedPosition.z; }
                     }
                 }
+                else
+                {
+                    m_PositionInterpolator.InterpolateState.Reset(transform.position);
+                    m_RotationInterpolator.InterpolateState.Reset(transform.rotation);
+                    m_InternalCurrentPosition = transform.position;
+                    m_InternalCurrentRotation = transform.rotation;
+                }
 
                 if (SynchronizeScale)
                 {
