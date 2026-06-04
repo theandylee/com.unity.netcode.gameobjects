@@ -291,8 +291,24 @@ namespace Unity.Netcode
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Initialize()
         {
+            ResetStaticState();
             UnregisterLoopSystems();
             RegisterLoopSystems();
+        }
+
+        /// <summary>
+        /// Resets all static state to support Enter Play Mode without Domain Reload.
+        /// </summary>
+        internal static void ResetStaticState()
+        {
+            UpdateStage = NetworkUpdateStage.Unset;
+
+            // Clear all registered update systems from the previous session
+            foreach (NetworkUpdateStage updateStage in Enum.GetValues(typeof(NetworkUpdateStage)))
+            {
+                s_UpdateSystem_Sets[updateStage].Clear();
+                s_UpdateSystem_Arrays[updateStage] = new INetworkUpdateSystem[k_UpdateSystem_InitialArrayCapacity];
+            }
         }
 
         private enum LoopSystemPosition

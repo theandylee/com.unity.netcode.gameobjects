@@ -152,5 +152,14 @@ namespace Unity.Netcode
             return true;
         }
 
+        /// <summary>
+        /// Resets all static state to support Enter Play Mode without Domain Reload.
+        /// </summary>
+        internal static void ResetStaticState()
+        {
+            Config = default;
+            s_Log = new ContextualLogger(true);
+        }
+
     }
 }

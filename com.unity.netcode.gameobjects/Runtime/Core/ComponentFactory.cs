@@ -47,6 +47,14 @@ namespace Unity.Netcode
         }
 
         /// <summary>
+        /// Resets all static state to support Enter Play Mode without Domain Reload.
+        /// </summary>
+        internal static void ResetStaticState()
+        {
+            s_Delegates.Clear();
+        }
+
+        /// <summary>
         /// Initializes the default creation logic for all supported component types
         /// </summary>
         public static void SetDefaults()

@@ -4869,6 +4869,22 @@ namespace Unity.Netcode.Components
             }
         }
         #endregion
+
+        #region STATIC STATE RESET
+        /// <summary>
+        /// Resets all static state to support Enter Play Mode without Domain Reload.
+        /// </summary>
+        internal static void ResetStaticState()
+        {
+            CurrentTick = 0;
+            TrackStateUpdateId = false;
+            AssignDefaultInterpolationType = false;
+            DefaultInterpolationType = default;
+            InterpolationBufferTickOffset = 0;
+            s_NetworkTickRegistration.Clear();
+            s_TickSynchPosition = 0;
+        }
+        #endregion
     }
 
     internal interface INetworkTransformLogStateEntry

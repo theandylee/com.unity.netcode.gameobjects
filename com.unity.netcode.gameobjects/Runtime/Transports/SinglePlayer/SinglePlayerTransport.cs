@@ -146,5 +146,13 @@ namespace Unity.Netcode.Transports.SinglePlayer
             s_MessageQueue.Clear();
             m_NetworkManager = networkManager;
         }
+
+        /// <summary>
+        /// Resets all static state to support Enter Play Mode without Domain Reload.
+        /// </summary>
+        internal static void ResetStaticState()
+        {
+            s_MessageQueue.Clear();
+        }
     }
 }

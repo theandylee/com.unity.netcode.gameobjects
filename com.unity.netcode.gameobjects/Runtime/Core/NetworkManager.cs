@@ -1044,6 +1044,26 @@ namespace Unity.Netcode
         }
 
         /// <summary>
+        /// Resets all static state to support Enter Play Mode without Domain Reload.
+        /// </summary>
+        internal static void ResetStaticState()
+        {
+            Singleton = null;
+            OnInstantiated = null;
+            OnDestroying = null;
+            OnSingletonReady = null;
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+            s_SerializedType.Clear();
+            DisableNotOptimizedSerializedType = false;
+#endif
+            IsDistributedAuthority = false;
+#if UNITY_EDITOR
+            NetworkManagerHelper = null;
+            OnNetworkManagerReset = null;
+#endif
+        }
+
+        /// <summary>
         /// Set this NetworkManager instance as the static NetworkManager singleton
         /// </summary>
         public void SetSingleton()

@@ -164,5 +164,13 @@ namespace Unity.Netcode
             }
             m_Triggers.Clear();
         }
+
+        /// <summary>
+        /// Resets static state to support Enter Play Mode without Domain Reload.
+        /// </summary>
+        internal static void ResetStaticState()
+        {
+            IncludeMessageType = true;
+        }
     }
 }

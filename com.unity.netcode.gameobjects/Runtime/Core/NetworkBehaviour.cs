@@ -1708,5 +1708,13 @@ namespace Unity.Netcode
                 networkVar.Dispose();
             }
         }
+
+        /// <summary>
+        /// Resets all static state to support Enter Play Mode without Domain Reload.
+        /// </summary>
+        internal static void ResetStaticState()
+        {
+            LogSentVariableUpdateMessage = false;
+        }
     }
 }

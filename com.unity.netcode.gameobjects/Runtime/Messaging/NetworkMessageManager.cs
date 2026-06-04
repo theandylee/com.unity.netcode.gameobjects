@@ -886,5 +886,13 @@ namespace Unity.Netcode
                 sendQueueItem.Clear();
             }
         }
+
+        /// <summary>
+        /// Resets static state to support Enter Play Mode without Domain Reload.
+        /// </summary>
+        internal static void ResetStaticState()
+        {
+            EnableMessageOrderConsoleLog = false;
+        }
     }
 }

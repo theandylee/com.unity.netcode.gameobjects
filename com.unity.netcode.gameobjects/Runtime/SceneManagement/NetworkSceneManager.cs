@@ -1615,6 +1615,14 @@ namespace Unity.Netcode
                 s_Instances.Clear();
             }
 
+            /// <summary>
+            /// Resets static state to support Enter Play Mode without Domain Reload.
+            /// </summary>
+            internal static void ResetStaticState()
+            {
+                s_Instances.Clear();
+            }
+
             private NetworkSceneManager m_NetworkSceneManager;
             private AsyncOperation m_AsyncOperation;
             private LoadSceneMode m_LoadSceneMode;
@@ -3334,6 +3342,16 @@ namespace Unity.Netcode
                     OnUnloadEventCompleted?.Invoke(SceneNameFromHash(eventData.SceneHash), eventData.LoadSceneMode, eventData.ClientsCompleted, eventData.ClientsTimedOut);
                     break;
             }
+        }
+
+        /// <summary>
+        /// Resets all static state to support Enter Play Mode without Domain Reload.
+        /// </summary>
+        internal static void ResetStaticState()
+        {
+            DisableReSynchronization = false;
+            IsSpawnedObjectsPendingInDontDestroyOnLoad = false;
+            SceneUnloadEventHandler.ResetStaticState();
         }
 
     }

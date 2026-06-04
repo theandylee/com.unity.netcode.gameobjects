@@ -2019,5 +2019,17 @@ namespace Unity.Netcode.Transports.UTP
             AddDisconnectEventMap(NetworkTransport.DisconnectEvents.ClosedRemoteConnection, k_ClosedRemoteConnection, ClosedRemoteConnectionMessage);
             AddDisconnectEventMap(NetworkTransport.DisconnectEvents.TransportShutdown, k_TransportShutdown, TransportShutdownMessage);
         }
+
+        /// <summary>
+        /// Resets all static state to support Enter Play Mode without Domain Reload.
+        /// </summary>
+        internal static void ResetStaticState()
+        {
+            OnDriverInitialized = null;
+            OnDisposingDriver = null;
+            TransportInitialized = null;
+            TransportDisposed = null;
+            s_DriverConstructor = null;
+        }
     }
 }
