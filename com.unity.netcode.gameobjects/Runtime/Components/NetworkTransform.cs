@@ -1065,8 +1065,6 @@ namespace Unity.Netcode.Components
 
         #region PROPERTIES AND GENERAL METHODS
 
-        public bool SkipNextStatusUpdate = false;
-
         /// <summary>
         /// Used on the authority side only.
         /// This is the current network tick and is set within <see cref="NetworkManager.NetworkUpdate(NetworkUpdateStage)"/>.
@@ -2724,7 +2722,10 @@ namespace Unity.Netcode.Components
                 }
                 else
                 {
+                    m_PositionInterpolator.InterpolateState.Reset(transform.position);
+                    m_RotationInterpolator.InterpolateState.Reset(transform.rotation);
                     m_InternalCurrentPosition = CachedTransform.position;
+                    m_InternalCurrentRotation = CachedTransform.rotation;
                 }
 
                 if (SynchronizeScale)
@@ -2839,16 +2840,13 @@ namespace Unity.Netcode.Components
                 else
 #endif
                 {
-                    if (!SkipNextStatusUpdate)
+                    if (PositionInLocalSpace)
                     {
-                        if (PositionInLocalSpace)
-                        {
-                            CachedTransform.localPosition = m_InternalCurrentPosition;
-                        }
-                        else
-                        {
-                            CachedTransform.position = m_InternalCurrentPosition;
-                        }
+                        CachedTransform.localPosition = m_InternalCurrentPosition;
+                    }
+                    else
+                    {
+                        CachedTransform.position = m_InternalCurrentPosition;
                     }
                 }
             }
@@ -2884,21 +2882,16 @@ namespace Unity.Netcode.Components
                 else
 #endif
                 {
-                    if (!SkipNextStatusUpdate)
+                    if (RotationInLocalSpace)
                     {
-                        if (RotationInLocalSpace)
-                        {
-                            CachedTransform.localRotation = m_InternalCurrentRotation;
-                        }
-                        else
-                        {
-                            CachedTransform.rotation = m_InternalCurrentRotation;
-                        }
+                        CachedTransform.localRotation = m_InternalCurrentRotation;
+                    }
+                    else
+                    {
+                        CachedTransform.rotation = m_InternalCurrentRotation;
                     }
                 }
             }
-
-            SkipNextStatusUpdate = false;
 
             // Apply the scale if we are synchronizing scale
             if (SynchronizeScale)
