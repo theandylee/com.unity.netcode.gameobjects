@@ -1,4 +1,6 @@
-using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Unity.Netcode
 {
@@ -6,11 +8,28 @@ namespace Unity.Netcode
     /// Centralized static state cleanup to support Enter Play Mode without Domain Reload.
     /// When domain reload is disabled, static fields retain their values between play mode sessions,
     /// causing stale state, duplicate event registrations, and other issues.
-    /// This class resets all mutable static state before each play mode session begins.
+    /// This class resets all mutable static state when exiting play mode.
     /// </summary>
     internal static class StaticStateCleanup
     {
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+#if UNITY_EDITOR
+        [InitializeOnLoadMethod]
+        private static void Initialize()
+        {
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        private static void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.ExitingEditMode
+               || state = PlayModeStateChange.EnteredEditMode)
+            {
+                ResetAllStaticState();
+            }
+        }
+#endif
+
         private static void ResetAllStaticState()
         {
             NetworkUpdateLoop.ResetStaticState();
