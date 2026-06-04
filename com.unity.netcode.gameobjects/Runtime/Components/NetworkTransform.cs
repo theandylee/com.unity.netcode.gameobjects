@@ -1077,6 +1077,8 @@ namespace Unity.Netcode.Components
 
         #region PROPERTIES AND GENERAL METHODS
 
+        public bool SkipNextStatusUpdate = false;
+
         /// <summary>
         /// Used on the authority side only.
         /// This is the current network tick and is set within <see cref="NetworkManager.NetworkUpdate(NetworkUpdateStage)"/>.
@@ -2516,23 +2518,23 @@ namespace Unity.Netcode.Components
                 }
             }
             else // Just apply the full local scale when synchronizing
-            if (SynchronizeScale)
-            {
-                var localScale = CachedTransform.localScale;
-                if (!UseHalfFloatPrecision)
+                if (SynchronizeScale)
                 {
+                    var localScale = CachedTransform.localScale;
+                    if (!UseHalfFloatPrecision)
+                    {
 
-                    networkState.ScaleX = localScale.x;
-                    networkState.ScaleY = localScale.y;
-                    networkState.ScaleZ = localScale.z;
+                        networkState.ScaleX = localScale.x;
+                        networkState.ScaleY = localScale.y;
+                        networkState.ScaleZ = localScale.z;
+                    }
+                    else
+                    {
+                        networkState.Scale = localScale;
+                    }
+                    flagStates.MarkChanged(AxialType.Scale, true);
+                    isScaleDirty = true;
                 }
-                else
-                {
-                    networkState.Scale = localScale;
-                }
-                flagStates.MarkChanged(AxialType.Scale, true);
-                isScaleDirty = true;
-            }
             isDirty |= isPositionDirty || isRotationDirty || isScaleDirty;
 
             if (isDirty)
@@ -2830,13 +2832,16 @@ namespace Unity.Netcode.Components
                 else
 #endif
                 {
-                    if (PositionInLocalSpace)
+                    if (!SkipNextStatusUpdate)
                     {
-                        CachedTransform.localPosition = m_InternalCurrentPosition;
-                    }
-                    else
-                    {
-                        CachedTransform.position = m_InternalCurrentPosition;
+                        if (PositionInLocalSpace)
+                        {
+                            CachedTransform.localPosition = m_InternalCurrentPosition;
+                        }
+                        else
+                        {
+                            CachedTransform.position = m_InternalCurrentPosition;
+                        }
                     }
                 }
             }
@@ -2872,16 +2877,21 @@ namespace Unity.Netcode.Components
                 else
 #endif
                 {
-                    if (RotationInLocalSpace)
+                    if (!SkipNextStatusUpdate)
                     {
-                        CachedTransform.localRotation = m_InternalCurrentRotation;
-                    }
-                    else
-                    {
-                        CachedTransform.rotation = m_InternalCurrentRotation;
+                        if (RotationInLocalSpace)
+                        {
+                            CachedTransform.localRotation = m_InternalCurrentRotation;
+                        }
+                        else
+                        {
+                            CachedTransform.rotation = m_InternalCurrentRotation;
+                        }
                     }
                 }
             }
+
+            SkipNextStatusUpdate = false;
 
             // Apply the scale if we are synchronizing scale
             if (SynchronizeScale)
@@ -3489,11 +3499,11 @@ namespace Unity.Netcode.Components
                     }
                 }
                 else // Otherwise, just run through standard synchronization of this instance
-                if (!CanCommitToTransform)
-                {
-                    ApplySynchronization();
-                    InternalInitialization();
-                }
+                    if (!CanCommitToTransform)
+                    {
+                        ApplySynchronization();
+                        InternalInitialization();
+                    }
             }
         }
 
