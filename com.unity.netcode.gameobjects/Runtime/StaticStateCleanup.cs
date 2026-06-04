@@ -20,10 +20,10 @@ namespace Unity.Netcode
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
-        private static void OnPlayModeStateChanged(PlayModeStateChange state)
+        private static void OnPlayModeStateChanged(PlayModeStateChange stateChange)
         {
-            if (state == PlayModeStateChange.ExitingEditMode
-               || state = PlayModeStateChange.EnteredEditMode)
+            if (stateChange == PlayModeStateChange.ExitingEditMode
+               || stateChange == PlayModeStateChange.EnteredEditMode)
             {
                 ResetAllStaticState();
             }
