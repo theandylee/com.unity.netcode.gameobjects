@@ -2640,6 +2640,14 @@ namespace Unity.Netcode.Components
 
         }
 
+        public void ResetInterpolationState()
+        {
+            m_PositionInterpolator.InterpolateState.Reset(CachedTransform.position);
+            m_RotationInterpolator.InterpolateState.Reset(CachedTransform.rotation);
+            m_InternalCurrentPosition = CachedTransform.position;
+            m_InternalCurrentRotation = CachedTransform.rotation;
+        }
+
         /// <summary>
         /// Applies the authoritative state to the transform
         /// </summary>
