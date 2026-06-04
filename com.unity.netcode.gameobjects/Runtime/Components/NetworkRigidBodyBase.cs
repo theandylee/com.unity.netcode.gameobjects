@@ -54,7 +54,7 @@ namespace Unity.Netcode.Components
 
         private NetworkManager m_LocalNetworkManager;
         // Used to cache the authority state of this Rigidbody during the last frame
-        private bool m_IsAuthority;
+        protected bool m_IsAuthority;
 
 #if COM_UNITY_MODULES_PHYSICS
         protected internal Rigidbody m_InternalRigidbody { get; private set; }
@@ -74,7 +74,7 @@ namespace Unity.Netcode.Components
             Interpolate,
             Extrapolate
         }
-        private InterpolationTypes m_OriginalInterpolation;
+        protected InterpolationTypes m_OriginalInterpolation;
 
         /// <summary>
         /// Used to define the type of Rigidbody implemented.
