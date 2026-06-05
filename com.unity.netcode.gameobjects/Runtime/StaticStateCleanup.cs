@@ -2,6 +2,8 @@
 using UnityEditor;
 #endif
 
+using Unity.Netcode.Components;
+
 namespace Unity.Netcode
 {
     /// <summary>
