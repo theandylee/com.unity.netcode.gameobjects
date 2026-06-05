@@ -1058,7 +1058,6 @@ namespace Unity.Netcode
 #endif
             IsDistributedAuthority = false;
 #if UNITY_EDITOR
-            NetworkManagerHelper = null;
             OnNetworkManagerReset = null;
 #endif
         }
