@@ -1742,6 +1742,9 @@ namespace Unity.Netcode
             // Apply the is destroying flag
             SetIsDestroying();
 
+            // Always unsubscribe from active scene changed updates
+            SceneManager.activeSceneChanged -= CurrentlyActiveSceneChanged;
+
             var networkManager = NetworkManager;
             // If no NetworkManager is assigned, then just exit early
             if (!networkManager)
