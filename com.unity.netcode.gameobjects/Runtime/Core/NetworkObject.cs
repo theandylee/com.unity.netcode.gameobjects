@@ -175,18 +175,6 @@ namespace Unity.Netcode
             PrefabStage.prefabStageClosing += PrefabStageClosing;
         }
 
-        /// <summary>
-        /// Resets all static state to support Enter Play Mode without Domain Reload.
-        /// </summary>
-        internal static void ResetStaticState()
-        {
-            OrphanChildren.Clear();
-            s_PrefabStage = null;
-            s_PrefabAsset = null;
-            s_PrefabInstance = null;
-            s_DebugPrefabIdGeneration = false;
-        }
-
         private static void PrefabStageClosing(PrefabStage prefabStage)
         {
             // If domain reloading is enabled, then this will be null when we return from playmode.
@@ -359,6 +347,20 @@ namespace Unity.Netcode
             }
         }
 #endif // UNITY_EDITOR
+
+        /// <summary>
+        /// Resets all static state to support Enter Play Mode without Domain Reload.
+        /// </summary>
+        internal static void ResetStaticState()
+        {
+            OrphanChildren.Clear();
+#if UNITY_EDITOR
+            s_PrefabStage = null;
+            s_PrefabAsset = null;
+            s_PrefabInstance = null;
+            s_DebugPrefabIdGeneration = false;
+#endif
+        }
 
         /// <summary>
         /// Gets the NetworkManager that owns this NetworkObject instance
