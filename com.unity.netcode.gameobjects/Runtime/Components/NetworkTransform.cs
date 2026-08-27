@@ -5,6 +5,7 @@ using System.Text;
 using Unity.Mathematics;
 using Unity.Netcode.Runtime;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Unity.Netcode.Components
 {
@@ -1064,6 +1065,8 @@ namespace Unity.Netcode.Components
         #endregion
 
         #region PROPERTIES AND GENERAL METHODS
+
+        public bool skipNextStatusUpdate = false;
 
         /// <summary>
         /// Used on the authority side only.
@@ -2848,13 +2851,17 @@ namespace Unity.Netcode.Components
                 else
 #endif
                 {
-                    if (PositionInLocalSpace)
+                    if (skipNextStatusUpdate)
                     {
-                        CachedTransform.localPosition = m_InternalCurrentPosition;
-                    }
-                    else
-                    {
-                        CachedTransform.position = m_InternalCurrentPosition;
+
+                        if (PositionInLocalSpace)
+                        {
+                            CachedTransform.localPosition = m_InternalCurrentPosition;
+                        }
+                        else
+                        {
+                            CachedTransform.position = m_InternalCurrentPosition;
+                        }
                     }
                 }
             }
@@ -2890,13 +2897,16 @@ namespace Unity.Netcode.Components
                 else
 #endif
                 {
-                    if (RotationInLocalSpace)
+                    if (skipNextStatusUpdate)
                     {
-                        CachedTransform.localRotation = m_InternalCurrentRotation;
-                    }
-                    else
-                    {
-                        CachedTransform.rotation = m_InternalCurrentRotation;
+                        if (RotationInLocalSpace)
+                        {
+                            CachedTransform.localRotation = m_InternalCurrentRotation;
+                        }
+                        else
+                        {
+                            CachedTransform.rotation = m_InternalCurrentRotation;
+                        }
                     }
                 }
             }
