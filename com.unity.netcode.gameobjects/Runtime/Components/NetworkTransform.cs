@@ -2851,7 +2851,7 @@ namespace Unity.Netcode.Components
                 else
 #endif
                 {
-                    if (skipNextStatusUpdate)
+                    if (!skipNextStatusUpdate)
                     {
 
                         if (PositionInLocalSpace)
@@ -2897,7 +2897,7 @@ namespace Unity.Netcode.Components
                 else
 #endif
                 {
-                    if (skipNextStatusUpdate)
+                    if (!skipNextStatusUpdate)
                     {
                         if (RotationInLocalSpace)
                         {
