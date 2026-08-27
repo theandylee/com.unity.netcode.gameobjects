@@ -2910,6 +2910,7 @@ namespace Unity.Netcode.Components
                     }
                 }
             }
+            skipNextStatusUpdate = false;
 
             // Apply the scale if we are synchronizing scale
             if (SynchronizeScale)
