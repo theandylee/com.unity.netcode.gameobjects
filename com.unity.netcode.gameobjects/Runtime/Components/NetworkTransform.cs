@@ -2652,6 +2652,57 @@ namespace Unity.Netcode.Components
         }
 
         /// <summary>
+        /// Re-anchors all cached non-authoritative state to the current transform values.
+        /// Invoked when a spawned non-authoritative instance transitions from an inactive to an
+        /// active GameObject state. This prevents any stale cached state from being applied to
+        /// the transform before an authoritative state update has been received.
+        /// </summary>
+        protected virtual void OnEnable()
+        {
+            if (!IsSpawned || CanCommitToTransform)
+            {
+                return;
+            }
+
+            ReanchorToCurrentTransform();
+        }
+
+        private void ReanchorToCurrentTransform()
+        {
+            var useRigidBodyForMotion = m_UseRigidbodyForMotion && m_NetworkRigidbodyInternal != null;
+            var position = useRigidBodyForMotion ? m_NetworkRigidbodyInternal.GetPosition() : GetSpaceRelativePosition();
+            var rotation = useRigidBodyForMotion ? m_NetworkRigidbodyInternal.GetRotation() : GetSpaceRelativeRotation();
+            var serverTime = m_CachedNetworkManager.ServerTime.Time;
+
+            m_LastStateTargetPosition = m_InternalCurrentPosition = position;
+            m_InternalCurrentRotation = rotation;
+            m_TargetRotation = m_InternalCurrentRotation.eulerAngles;
+            m_TargetScale = m_InternalCurrentScale = GetScale();
+
+            m_LocalAuthoritativeNetworkState.FlagStates.HasPositionChange = false;
+            m_LocalAuthoritativeNetworkState.FlagStates.HasRotAngleChange = false;
+            m_LocalAuthoritativeNetworkState.FlagStates.HasScaleChange = false;
+            m_LocalAuthoritativeNetworkState.FlagStates.IsTeleportingNextFrame = false;
+            m_LocalAuthoritativeNetworkState.FlagStates.IsSynchronizing = false;
+            m_LocalAuthoritativeNetworkState.FlagStates.IsDirty = false;
+            m_LocalAuthoritativeNetworkState.ExplicitSet = false;
+
+            if (UseHalfFloatPrecision)
+            {
+                m_HalfPositionState = new NetworkDeltaPosition(position, m_CachedNetworkManager.ServerTime.Tick, math.bool3(SyncPositionX, SyncPositionY, SyncPositionZ));
+            }
+
+            if (Interpolate)
+            {
+                UpdatePositionInterpolator(position, serverTime, true);
+                m_RotationInterpolator.AutoConvertTransformSpace = SwitchTransformSpaceWhenParented;
+                m_RotationInterpolator.InLocalSpace = InLocalSpace;
+                m_RotationInterpolator.ResetTo(CachedTransform.parent, rotation, serverTime);
+                m_ScaleInterpolator.ResetTo(m_InternalCurrentScale, serverTime);
+            }
+        }
+
+        /// <summary>
         /// Applies the authoritative state to the transform
         /// </summary>
         protected internal void ApplyAuthoritativeState()
