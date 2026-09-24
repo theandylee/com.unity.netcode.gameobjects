@@ -2645,6 +2645,10 @@ namespace Unity.Netcode.Components
 
         public void ResetInterpolationState()
         {
+            // Drain buffered measurements so stale pre-reset states can't replay on the next update.
+            m_PositionInterpolator.Clear();
+            m_RotationInterpolator.Clear();
+            m_ScaleInterpolator.Clear();
             m_PositionInterpolator.InterpolateState.Reset(CachedTransform.position);
             m_RotationInterpolator.InterpolateState.Reset(CachedTransform.rotation);
             m_InternalCurrentPosition = CachedTransform.position;
