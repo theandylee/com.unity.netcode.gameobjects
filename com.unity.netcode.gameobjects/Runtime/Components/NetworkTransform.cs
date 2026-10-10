@@ -1077,6 +1077,8 @@ namespace Unity.Netcode.Components
 
         #region PROPERTIES AND GENERAL METHODS
 
+        public bool skipNextStatusUpdate = false;
+
         /// <summary>
         /// Used on the authority side only.
         /// This is the current network tick and is set within <see cref="NetworkManager.NetworkUpdate(NetworkUpdateStage)"/>.
@@ -2649,6 +2651,69 @@ namespace Unity.Netcode.Components
 
         }
 
+        public void ResetInterpolationState()
+        {
+            // Drain buffered measurements so stale pre-reset states can't replay on the next update.
+            m_PositionInterpolator.Clear();
+            m_RotationInterpolator.Clear();
+            m_ScaleInterpolator.Clear();
+            m_PositionInterpolator.InterpolateState.Reset(CachedTransform.position);
+            m_RotationInterpolator.InterpolateState.Reset(CachedTransform.rotation);
+            m_InternalCurrentPosition = CachedTransform.position;
+            m_InternalCurrentRotation = CachedTransform.rotation;
+        }
+
+        /// <summary>
+        /// Re-anchors all cached non-authoritative state to the current transform values.
+        /// Invoked when a spawned non-authoritative instance transitions from an inactive to an
+        /// active GameObject state. This prevents any stale cached state from being applied to
+        /// the transform before an authoritative state update has been received.
+        /// </summary>
+        protected virtual void OnEnable()
+        {
+            if (!IsSpawned || CanCommitToTransform)
+            {
+                return;
+            }
+
+            ReanchorToCurrentTransform();
+        }
+
+        private void ReanchorToCurrentTransform()
+        {
+            var useRigidBodyForMotion = m_UseRigidbodyForMotion && m_NetworkRigidbodyInternal != null;
+            var position = useRigidBodyForMotion ? m_NetworkRigidbodyInternal.GetPosition() : GetSpaceRelativePosition();
+            var rotation = useRigidBodyForMotion ? m_NetworkRigidbodyInternal.GetRotation() : GetSpaceRelativeRotation();
+            var serverTime = m_CachedNetworkManager.ServerTime.Time;
+
+            m_LastStateTargetPosition = m_InternalCurrentPosition = position;
+            m_InternalCurrentRotation = rotation;
+            m_TargetRotation = m_InternalCurrentRotation.eulerAngles;
+            m_TargetScale = m_InternalCurrentScale = GetScale();
+
+            m_LocalAuthoritativeNetworkState.FlagStates.HasPositionChange = false;
+            m_LocalAuthoritativeNetworkState.FlagStates.HasRotAngleChange = false;
+            m_LocalAuthoritativeNetworkState.FlagStates.HasScaleChange = false;
+            m_LocalAuthoritativeNetworkState.FlagStates.IsTeleportingNextFrame = false;
+            m_LocalAuthoritativeNetworkState.FlagStates.IsSynchronizing = false;
+            m_LocalAuthoritativeNetworkState.FlagStates.IsDirty = false;
+            m_LocalAuthoritativeNetworkState.ExplicitSet = false;
+
+            if (UseHalfFloatPrecision)
+            {
+                m_HalfPositionState = new NetworkDeltaPosition(position, m_CachedNetworkManager.ServerTime.Tick, math.bool3(SyncPositionX, SyncPositionY, SyncPositionZ));
+            }
+
+            if (Interpolate)
+            {
+                UpdatePositionInterpolator(position, serverTime, true);
+                m_RotationInterpolator.AutoConvertTransformSpace = SwitchTransformSpaceWhenParented;
+                m_RotationInterpolator.InLocalSpace = InLocalSpace;
+                m_RotationInterpolator.ResetTo(CachedTransform.parent, rotation, serverTime);
+                m_ScaleInterpolator.ResetTo(m_InternalCurrentScale, serverTime);
+            }
+        }
+
         /// <summary>
         /// Applies the authoritative state to the transform
         /// </summary>
@@ -2728,6 +2793,13 @@ namespace Unity.Netcode.Components
                         if (SyncPositionY) { adjustedPosition.y = interpolatedPosition.y; }
                         if (SyncPositionZ) { adjustedPosition.z = interpolatedPosition.z; }
                     }
+                }
+                else
+                {
+                    m_PositionInterpolator.InterpolateState.Reset(transform.position);
+                    m_RotationInterpolator.InterpolateState.Reset(transform.rotation);
+                    m_InternalCurrentPosition = CachedTransform.position;
+                    m_InternalCurrentRotation = CachedTransform.rotation;
                 }
 
                 if (SynchronizeScale)
@@ -2842,13 +2914,17 @@ namespace Unity.Netcode.Components
                 else
 #endif
                 {
-                    if (PositionInLocalSpace)
+                    if (!skipNextStatusUpdate)
                     {
-                        CachedTransform.localPosition = m_InternalCurrentPosition;
-                    }
-                    else
-                    {
-                        CachedTransform.position = m_InternalCurrentPosition;
+
+                        if (PositionInLocalSpace)
+                        {
+                            CachedTransform.localPosition = m_InternalCurrentPosition;
+                        }
+                        else
+                        {
+                            CachedTransform.position = m_InternalCurrentPosition;
+                        }
                     }
                 }
             }
@@ -2884,16 +2960,20 @@ namespace Unity.Netcode.Components
                 else
 #endif
                 {
-                    if (RotationInLocalSpace)
+                    if (!skipNextStatusUpdate)
                     {
-                        CachedTransform.localRotation = m_InternalCurrentRotation;
-                    }
-                    else
-                    {
-                        CachedTransform.rotation = m_InternalCurrentRotation;
+                        if (RotationInLocalSpace)
+                        {
+                            CachedTransform.localRotation = m_InternalCurrentRotation;
+                        }
+                        else
+                        {
+                            CachedTransform.rotation = m_InternalCurrentRotation;
+                        }
                     }
                 }
             }
+            skipNextStatusUpdate = false;
 
             // Apply the scale if we are synchronizing scale
             if (SynchronizeScale)
